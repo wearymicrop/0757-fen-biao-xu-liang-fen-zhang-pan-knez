@@ -1,0 +1,4 @@
+{% from 'proof.jinja' import evidence %}
+<div class="panel-title"><h2>分表峰时贡献</h2><small>{{ result.peak.peak.label if result.peak.peak else '无峰值窗口' }}</small></div>
+{% set individual = result.peak.individual %}
+<div class="scroll"><table><thead><tr><th>表号</th><th>归属</th><th class="num">共同峰 kW</th><th class="num">独立峰 kW</th><th>取样和映射来源</th></tr></thead><tbody>{% for row in current.meters %}<tr><td>{{ row.meter }}</td><td>{{ row.account or '未分配' }}</td><td class="num">{{ row.kw }}</td><td class="num">{% for own in individual if own.meter==row.meter %}{{ own.kw }}{% endfor %}</td><td>{{ evidence(row.sources + row.mapping_sources) }}</td></tr>{% else %}<tr><td colspan="5">无峰值分摊记录。</td></tr>{% endfor %}</tbody></table></div>

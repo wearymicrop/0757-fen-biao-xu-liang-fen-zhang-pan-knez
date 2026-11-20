@@ -1,0 +1,16 @@
+services:
+  app:
+    build: .
+    ports:
+      - "127.0.0.1:${HOST_PORT:-18451}:8000"
+    environment:
+      DB_PATH: /data/archive.sqlite3
+    volumes:
+      - records:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=2)"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+volumes:
+  records:

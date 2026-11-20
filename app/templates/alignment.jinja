@@ -1,0 +1,3 @@
+{% from 'proof.jinja' import evidence %}
+<div class="panel-title"><h2>窗口完整度</h2><span>{{ current.eligible }} 个完整 · {{ current.missing_slots }} 个缺失格点</span></div>
+<div class="scroll"><table><thead><tr><th>窗口</th><th>状态</th><th>缺失格点</th></tr></thead><tbody>{% for row in current.windows %}<tr><td>{{ row.label }}</td><td>{{ '完整' if row.eligible else '排除' }}</td><td>{% for gap in row.missing %}<div>{{ gap.meter }} / {{ gap.timestamp }}{{ evidence(gap.sources) }}</div>{% else %}—{% endfor %}</td></tr>{% endfor %}</tbody></table></div>

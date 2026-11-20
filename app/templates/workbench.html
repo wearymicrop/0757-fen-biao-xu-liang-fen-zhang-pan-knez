@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ project }} · {{ titles[stage] }}</title>
+<link rel="stylesheet" href="/static/theme.css"><link rel="stylesheet" href="/static/layout.css"><link rel="stylesheet" href="/static/components.css">
+<script src="/static/curve.js" defer></script><script src="/static/batch.js" defer></script></head>
+<body>
+<aside><a class="mark" href="/?sample={{ sample }}"><span>需</span>{{ project }}</a><p class="nav-title">电表核算</p>
+<nav aria-label="电表核算">{% for id,caption in titles.items() %}<a href="/work/{{ id }}?sample={{ sample }}" {% if id==stage %}aria-current="page"{% endif %}>{{ caption }}</a>{% endfor %}</nav>
+<div class="meter-badge"><small>当前园区</small><b>{{ result.sampling.site }}</b><small>计量时区 UTC+08</small></div></aside>
+<main><header><div><p class="site">{{ result.sampling.site }} / 十五分钟计量</p><h1>{{ titles[stage] }}</h1></div>
+<form id="batch" data-sample="{{ sample }}"><label>样例 <select id="sample" name="sample">{% for id,label in samples.items() %}<option value="{{ id }}" {% if id==sample %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></label><button>保存账单证据</button></form></header>
+{% set bill = result.billing %}
+<div class="kpis"><div>共同峰 <strong id="headline-peak">{{ result.balance.main_kw or '—' }} <small>kW</small></strong></div><div>已归因 <strong>{{ result.balance.assigned_kw or '—' }} <small>kW</small></strong></div><div>未分配 <strong>{{ result.balance.unallocated_kw or '—' }} <small>kW</small></strong></div><div>计费合计 <strong>{% if bill.total_cents is not none %}{{ bill.total_cents|yuan }}{% else %}—{% endif %} <small>元</small></strong></div></div>
+<div class="grid">
+<section class="panel workspace">{% include stage ~ '.jinja' %}</section>
+<section class="panel contributions"><div class="panel-title"><h2>峰时去向</h2><small>{{ result.peak.peak.label if result.peak.peak else '未定' }}</small></div>
+{% set rows = result.allocation.accounts %}{% set scale = result.balance.main_w_sum or 1 %}
+{% for row in rows %}<div class="bar-row"><span>{{ row.account }}</span><b>{{ row.kw }} kW</b><i style="--bar:{{ [100*row.w_sum/scale, 100]|min }}%"></i></div>{% endfor %}
+{% if result.balance.unallocated_w_sum is defined %}<div class="bar-row uncertain"><span>未分配量</span><b>{{ result.balance.unallocated_kw }} kW</b><i style="--bar:{{ [0,[100*result.balance.unallocated_w_sum/scale, 100]|min]|max }}%"></i></div>{% else %}<p class="placeholder">等待完整窗口。</p>{% endif %}</section>
+<section class="panel deviations" id="exceptions"><div class="panel-title"><h2>差异行</h2><small>{{ result.peak.excluded }} 个窗口缺样</small></div><div class="alerts">
+{% for name, section in result.items() %}{% for alert in section.issues %}<details><summary>{{ alert.label }} <code>{{ alert.code }}</code></summary>{% if alert.window %}<p>{{ alert.window }} · {{ alert.meter }}</p>{% endif %}{% for source in alert.sources %}<p>{{ source.table }} · #{{ source.line }}</p><pre>{{ source.raw|tojson(indent=2) }}</pre>{% endfor %}</details>{% endfor %}{% endfor %}
+{% if result.balance.status=='MATCHED' and not result.sampling.issues %}<p>功率与读数账已对平。</p>{% endif %}
+</div></section></div>
+<footer><span>输入 {{ input_ref }} · 规则 {{ rule_version }}</span><div><span id="run-info" role="status">未保存</span><button id="again" type="button" hidden>复算账单</button><a id="export" hidden>下载账单证据</a></div></footer>
+</main></body></html>

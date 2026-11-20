@@ -1,0 +1,3 @@
+<div class="panel-title"><h2>分账清单</h2><span>{% if current.state=='ready' %}可出账{% elif current.state=='review' %}草案待复核{% else %}暂停出账{% endif %}</span></div>
+<div class="scroll"><table><thead><tr><th>归属</th><th class="num">功率 kW</th><th class="num">尾差 分</th><th class="num">应计 元</th></tr></thead><tbody>{% for row in current.lines %}<tr><td>{{ row.account or '未分配量' }}</td><td class="num">{{ row.kw }}</td><td class="num">{{ row.tail_cent }}</td><td class="num">{{ row.amount_cents|yuan }}</td></tr>{% else %}<tr><td colspan="4">暂无可计费明细。</td></tr>{% endfor %}</tbody></table></div>
+<div class="footnote">费率 {{ current.rate_cents_per_kw|yuan }} 元/kW</div>

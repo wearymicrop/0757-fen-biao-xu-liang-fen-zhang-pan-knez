@@ -1,0 +1,3 @@
+{% macro evidence(sources) %}
+{% for src in sources %}<details><summary>{{ src.table }} #{{ src.line }}</summary><pre>{{ src.raw|tojson(indent=2) }}</pre></details>{% endfor %}
+{% endmacro %}

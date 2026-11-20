@@ -1,0 +1,9 @@
+:root {
+  --bg: #eef4f6; --surface: #fff; --surface-2: #e5eff1;
+  --ink: #18333d; --ink-muted: #4d6770; --line: #d1e0e5; --heavier: #a0b8bf;
+  --accent: #147d9b; --accent-dark: #09536a; --fill: #c8edf3; --blue: #166b87;
+  --ok: #19684e; --warn: #8d5a06; --bad: #ac3c46;
+  --font-ui: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-number: "SFMono-Regular", Consolas, monospace;
+  --radius: 13px; --gutter: 16px; --band: 22px;
+}

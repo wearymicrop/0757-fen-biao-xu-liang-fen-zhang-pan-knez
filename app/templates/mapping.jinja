@@ -1,0 +1,3 @@
+{% from 'proof.jinja' import evidence %}
+<div class="panel-title"><h2>有效分表归属</h2><span>{{ current.assigned }} 条窗口映射</span></div>
+<div class="scroll"><table><thead><tr><th>窗口 UTC</th><th>表号</th><th>归属</th><th>版本</th><th>原行</th></tr></thead><tbody>{% for instant,meters in current.windows.items() %}{% for meter,row in meters.items() %}<tr><td>{{ instant }}</td><td>{{ meter }}</td><td>{{ row.account or '暂不归属' }}</td><td>{{ row.version or '—' }}</td><td>{{ evidence(row.sources) }}</td></tr>{% endfor %}{% endfor %}</tbody></table></div>

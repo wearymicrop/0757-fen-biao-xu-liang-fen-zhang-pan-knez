@@ -1,0 +1,10 @@
+{% from 'proof.jinja' import evidence %}
+<div class="panel-title"><h2>园区需量曲线</h2><span class="legend"><i></i> 共同峰 <b>×</b> 缺样窗</span></div>
+<figure class="curve"><canvas id="demand-curve" aria-label="总表负荷曲线，单位千瓦" role="img"></canvas>
+<div class="window-choices" aria-label="选择窗口">{% for point in current.series %}<button type="button" data-window-button="{{ loop.index0 }}" data-kw="{{ point.kw or '' }}" data-gap="{{ 'false' if point.eligible else 'true' }}" data-official="{{ 'true' if current.peak and point.window==current.peak.window else 'false' }}" aria-pressed="{{ 'true' if (current.peak and point.window==current.peak.window) or (not current.peak and loop.first) else 'false' }}">{{ point.label[-5:] }}</button>{% endfor %}</div></figure>
+<div id="selected-window" aria-live="polite">
+{% for point in result.alignment.windows %}<div class="window-detail" data-window="{{ loop.index0 }}" {% if (current.peak and point.window!=current.peak.window) or (not current.peak and not loop.first) %}hidden{% endif %}>
+<div class="panel-title"><h3>{{ point.label }} · {% if not point.eligible %}缺样，已排除{% elif current.peak and point.window==current.peak.window %}园区共同峰{% else %}完整窗口{% endif %}</h3></div>
+<div class="scroll"><table><thead><tr><th>分表</th><th class="num">需量 kW</th><th>取样来源</th></tr></thead><tbody>
+{% for meter,row in point.meters.items() %}<tr><td>{{ meter }}{% if meter==result.sampling.main_meter %} · 总表{% endif %}</td><td class="num">{{ row.kw or '缺样' }}</td><td>{{ evidence(row.sources) }}{% for missing in row.missing %}<small>缺 {{ missing }}</small>{% endfor %}</td></tr>{% endfor %}
+</tbody></table></div></div>{% endfor %}</div>
