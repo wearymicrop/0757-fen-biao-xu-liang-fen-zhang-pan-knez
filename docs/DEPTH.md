@@ -15,6 +15,7 @@
 | M5 住户分摊 | 按有效映射归并同窗分表贡献 | `GET /api/allocation/{sample}` | `app/modules/m5_allocation/rules.py` | `tests/test_allocation.py` |
 | M6 功率勾稽 | 拆分已归因、未映射和总分表差 | `GET /api/balance/{sample}` | `app/modules/m6_balance/rules.py` | `tests/test_balance.py` |
 | M7 账单证据 | 按整分生成可核对的计费证据 | `GET /api/billing/{sample}` | `app/modules/m7_billing/rules.py` | `tests/test_billing.py` |
+| M8 账单修订 | 补录迟到读数与归属更正，裁决唯一可发布新账单 | `POST /api/revisions` | `app/revisions.py`、`app/revision_api.py` | `tests/test_revisions.py` |
 
 ## 陷阱登记
 
@@ -29,6 +30,10 @@
 | TRAP-23 | 干净样例：归属在窗口端点切换 | 同一表分入两份账 | 左闭右开生效 | `app/modules/m2_mapping/rules.py` | `tests/test_mapping.py::test_half_open_version_boundary` |
 | TRAP-24 | 边界样例：计费尾差恰为两个半分 | 逐行四舍五入增加合计 | 最大余数补齐 | `app/modules/m7_billing/rules.py` | `tests/test_billing.py::test_cent_tail_conservation` |
 | TRAP-25 | 脏样例：同一分表多个有效归属 | 后到者吞并旧账 | 隔离归属并留入未分配 | `app/modules/m2_mapping/rules.py` | `tests/test_mapping.py::test_overlapping_maps_pending` |
+| TRAP-31 | 月末补录迟到读数后原 09:00 共同峰可能移走 | 直接改写已签账单，旧依据丢失 | 修订另建内容寻址归档，旧 run 冻结，峰窗/金额/未分配量并列对照 | `app/revisions.py` | `tests/test_revisions.py::test_late_reading_moves_peak_and_recomputes_amounts` |
+| TRAP-32 | 同一更正重复点击或发布失败重试 | 每次生成一份新修订 | 修订键含底稿与规范化更正，插入忽略并回读同一记录 | `app/revisions.py`、`app/store.py` | `tests/test_revisions.py::test_duplicate_submission_returns_same_revision` |
+| TRAP-33 | 未对平或旧归档被删仍要求出账 | 用新草案替换旧版 | 发布闸门前置复核 MATCHED/ready 与双归档可读，否则保持 draft | `app/revisions.py` | `tests/test_revisions.py::test_unbalanced_revision_cannot_publish_and_retry_adds_nothing` |
+| TRAP-34 | 同一底稿并发两条修订抢占发布 | 出现两个"唯一新账单" | `revisions` 表对已发布底稿的部分唯一索引，竞争方 409 | `app/store.py` | `tests/test_revisions.py::test_publish_is_idempotent_and_unique_per_base` |
 
 ## 对账规则
 

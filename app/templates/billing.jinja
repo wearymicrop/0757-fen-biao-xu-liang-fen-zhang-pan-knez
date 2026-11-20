@@ -1,3 +1,14 @@
 <div class="panel-title"><h2>分账清单</h2><span>{% if current.state=='ready' %}可出账{% elif current.state=='review' %}草案待复核{% else %}暂停出账{% endif %}</span></div>
 <div class="scroll"><table><thead><tr><th>归属</th><th class="num">功率 kW</th><th class="num">尾差 分</th><th class="num">应计 元</th></tr></thead><tbody>{% for row in current.lines %}<tr><td>{{ row.account or '未分配量' }}</td><td class="num">{{ row.kw }}</td><td class="num">{{ row.tail_cent }}</td><td class="num">{{ row.amount_cents|yuan }}</td></tr>{% else %}<tr><td colspan="4">暂无可计费明细。</td></tr>{% endfor %}</tbody></table></div>
 <div class="footnote">费率 {{ current.rate_cents_per_kw|yuan }} 元/kW</div>
+<div class="revision-entry">
+<div class="panel-title"><h2>月末更正</h2><small>补录迟到读数 / 归属更正，旧版不替换</small></div>
+<form id="revision-form" class="revision-fields">
+<label>已签账单 ID（保存证据后取得）<input name="base_run_id" required placeholder="粘贴归档 ID"></label>
+<label>迟到读数 JSON（数组，字段同 readings）<textarea name="late_readings" rows="3" placeholder='[{"gateway":"G-B","meter":"M-001","at":"…","value":"42","unit":"kW"}]'></textarea></label>
+<label>归属更正 JSON（按表号整表替换）<textarea name="mapping_replacements" rows="3" placeholder='[{"meter":"M-001",…}]'></textarea></label>
+<label>修订说明<input name="note" placeholder="可选"></label>
+<button type="submit">生成修订草案并对照</button>
+<span id="revision-status" role="status"></span>
+</form>
+</div>

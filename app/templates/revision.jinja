@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ project }} · 账单修订裁决</title>
+<link rel="stylesheet" href="/static/theme.css"><link rel="stylesheet" href="/static/layout.css"><link rel="stylesheet" href="/static/components.css">
+<script src="/static/revision.js" defer></script></head>
+<body>
+<aside><a class="mark" href="/"><span>需</span>{{ project }}</a><p class="nav-title">账单修订</p>
+<nav aria-label="账单修订"><a href="/work/billing">返回账单证据</a><a href="/revisions/{{ revision.id }}" aria-current="page">修订裁决</a></nav>
+<div class="meter-badge"><small>修订编号</small><b>{{ revision.id[:10] }}</b><small>规则 {{ rule_version }}</small></div></aside>
+<main><header><div><p class="site">已签账单复核 / 唯一可发布新账单</p>
+<h1>账单修订裁决</h1></div>
+<form id="revision-publish" data-revision="{{ revision.id }}">
+<span class="state-badge state-{{ revision.state }}">{{ '已发布' if revision.state == 'published' else '草案（未替换旧版）' }}</span>
+<button {% if revision.state == 'published' or not revision.publishable %}disabled{% endif %}>
+{{ '已成为唯一发布版' if revision.state == 'published' else '核对无误，发布修订' }}
+</button></form></header>
+
+{% set cmp = revision.comparison %}
+<div class="kpis">
+<div>旧峰窗 <strong>{{ cmp.peak.before.label }} <small>{{ cmp.peak.before.kw or '' }} kW</small></strong></div>
+<div>新峰窗 <strong>{{ cmp.peak.after.label }} <small>{{ cmp.peak.after.kw or '' }} kW</small></strong>
+<small class="{% if cmp.peak.moved %}peak-moved{% else %}peak-kept{% endif %}">{{ '峰窗已移走' if cmp.peak.moved else '峰窗未变' }}</small></div>
+<div>合计差额 <strong>{{ cmp.total.delta_cents|signed_cents }} <small>元</small></strong></div>
+<div>发布条件 <strong>{{ '已对平可发布' if revision.publishable else '未对平拦截' }}</strong></div>
+</div>
+
+<div class="grid">
+<section class="panel workspace">
+<div class="panel-title"><h2>新旧峰窗对照</h2><small>共同 15 分钟窗</small></div>
+<div class="scroll"><table><thead><tr><th>版本</th><th>峰窗</th><th class="num">总表功率 kW</th><th>依据行</th></tr></thead><tbody>
+<tr><td>已签旧版</td><td>{{ cmp.peak.before.label }}</td><td class="num">{{ cmp.peak.before.kw or '—' }}</td>
+<td class="num">{% for src in cmp.peak.before.sources %}{{ src.table }}#{{ src.line }}{{ '、' if not loop.last else '' }}{% endfor %}</td></tr>
+<tr><td>修订新版</td><td>{{ cmp.peak.after.label }}</td><td class="num">{{ cmp.peak.after.kw or '—' }}</td>
+<td class="num">{% for src in cmp.peak.after.sources %}{{ src.table }}#{{ src.line }}{% if not loop.last %}、{% endif %}{% else %}—{% endfor %}</td></tr>
+</tbody></table></div>
+
+<div class="panel-title"><h2>住户金额差额</h2><small>账户 / 未分配量</small></div>
+<div class="scroll"><table><thead><tr><th>归属</th><th class="num">旧功率 kW</th><th class="num">新功率 kW</th>
+<th class="num">旧金额 元</th><th class="num">新金额 元</th><th class="num">差额 元</th></tr></thead><tbody>
+{% for row in cmp.accounts %}<tr {% if row.account is none %}class="uncertain"{% endif %}>
+<td>{{ row.account or '未分配量' }}</td>
+<td class="num">{{ row.before_kw or '—' }}</td><td class="num">{{ row.after_kw or '—' }}</td>
+<td class="num">{{ row.before_cents|yuan if row.before_cents is not none else '—' }}</td>
+<td class="num">{{ row.after_cents|yuan if row.after_cents is not none else '—' }}</td>
+<td class="num delta">{{ row.delta_cents|signed_cents }}</td></tr>{% endfor %}
+</tbody></table></div>
+
+<div class="panel-title"><h2>合计与未分配量</h2></div>
+<div class="scroll"><table><tbody>
+<tr><td>计费合计（元）</td><td class="num">{{ cmp.total.before_cents|yuan if cmp.total.before_cents is not none else '—' }}</td>
+<td class="num">{{ cmp.total.after_cents|yuan if cmp.total.after_cents is not none else '—' }}</td>
+<td class="num delta">{{ cmp.total.delta_cents|signed_cents }}</td></tr>
+<tr><td>未分配量（kW）</td><td class="num">{{ cmp.unallocated.before_kw or '—' }}</td>
+<td class="num">{{ cmp.unallocated.after_kw or '—' }}</td><td class="num">勾稽 {{ cmp.balance.after }}</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="panel contributions">
+<div class="panel-title"><h2>采用依据</h2><small>补录来源与被替换归属</small></div>
+<div class="alerts">
+<details open><summary>补录迟到读数（{{ revision.correction.late_readings|length }} 条）</summary>
+{% for row in revision.correction.late_readings %}<pre>{{ row|tojson(indent=2) }}</pre>{% else %}<p>本次无补录读数。</p>{% endfor %}</details>
+<details open><summary>归属更正（{{ revision.correction.mapping_replacements|length }} 条）</summary>
+{% for row in revision.correction.mapping_replacements %}<pre>{{ row|tojson(indent=2) }}</pre>{% else %}<p>本次无归属更正。</p>{% endfor %}</details>
+<details><summary>被替换的旧映射行（{{ revision.basis.replaced_mappings|length }} 条，原样留痕）</summary>
+{% for row in revision.basis.replaced_mappings %}<pre>{{ row|tojson(indent=2) }}</pre>{% else %}<p>无。</p>{% endfor %}</details>
+{% if revision.correction.note %}<details open><summary>修订说明</summary><p>{{ revision.correction.note }}</p></details>{% endif %}
+<div class="hash-line"><small>旧归档 <code>{{ revision.base_run_id[:12] }}</code> · 新批次 <code>{{ revision.new_run_id[:12] }}</code></small></div>
+</div>
+
+<div class="panel-title"><h2>发布闸门</h2><small>未对平或旧据丢失不得发布</small></div>
+<div class="alerts">
+{% if revision.publishable %}<p class="gate-ok">功率勾稽 {{ cmp.balance.after }}，账单可签发，旧归档完整可读。</p>
+{% else %}{% for blocker in revision.blockers %}<details open><summary class="gate-bad">{{ blocker.message }} <code>{{ blocker.code }}</code></summary></details>{% endfor %}{% endif %}
+<a class="download-link" href="/api/revisions/{{ revision.id }}/export">下载修订证据包（含旧版归档与补录来源）</a>
+<a class="download-link" href="/api/runs/{{ revision.base_run_id }}/export">单独追回已签旧版</a>
+</div>
+</section>
+</div>
+<footer><span>修订 {{ revision.id[:10] }} · 创建 {{ revision.created_at }}{% if revision.published_at %} · 发布 {{ revision.published_at }}{% endif %}</span>
+<span id="publish-info" role="status"></span></footer>
+</main></body></html>

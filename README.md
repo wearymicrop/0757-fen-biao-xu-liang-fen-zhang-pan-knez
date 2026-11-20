@@ -10,6 +10,10 @@ docker compose up --build
 
 `docker compose exec -T app pytest -q` 运行测试。命名卷 `records` 保存归档。宿主可用 `DB_PATH` 指定 SQLite 文件，安装 `requirements.txt` 后执行 `uvicorn app.main:app --port 18451`。
 
+## 月末更正与账单修订
+
+已签账单只冻结不替换。在「账单证据」页以归档 ID 发起修订（补录迟到读数、按表号整表替换归属），系统合并后重跑七模块并生成修订草案；`/revisions/{id}` 页对照新旧峰窗、住户金额差额、未分配量与采用依据。修订按底稿与规范化更正内容寻址，重复提交或失败重试不新增；仅当旧归档可读、功率勾稽 MATCHED 且账单 ready 时才能发布，同一底稿至多一条已发布修订。证据包可一并追回旧版归档与补录来源。
+
 - [七个模块与陷阱](docs/DEPTH.md)
 - [计量字段、单位和时间](docs/DATA-DICTIONARY.md)
 - [接口与证据](docs/API.md)

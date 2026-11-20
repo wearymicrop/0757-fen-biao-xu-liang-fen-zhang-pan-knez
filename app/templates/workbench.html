@@ -3,7 +3,7 @@
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ project }} · {{ titles[stage] }}</title>
 <link rel="stylesheet" href="/static/theme.css"><link rel="stylesheet" href="/static/layout.css"><link rel="stylesheet" href="/static/components.css">
-<script src="/static/curve.js" defer></script><script src="/static/batch.js" defer></script></head>
+<script src="/static/curve.js" defer></script><script src="/static/batch.js" defer></script><script src="/static/revision-form.js" defer></script></head>
 <body>
 <aside><a class="mark" href="/?sample={{ sample }}"><span>需</span>{{ project }}</a><p class="nav-title">电表核算</p>
 <nav aria-label="电表核算">{% for id,caption in titles.items() %}<a href="/work/{{ id }}?sample={{ sample }}" {% if id==stage %}aria-current="page"{% endif %}>{{ caption }}</a>{% endfor %}</nav>

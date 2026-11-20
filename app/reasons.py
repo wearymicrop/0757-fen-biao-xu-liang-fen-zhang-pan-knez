@@ -6,4 +6,11 @@ REASONS = {
     "MAP_OVERLAP": "表号映射版本重叠", "MAP_TRANSITION": "归属在计量窗口内切换", "WINDOW_GAP": "窗口缺样，排除于找峰",
     "NO_COMMON_PEAK": "无完整公共窗口", "NEGATIVE_RESIDUAL": "分表功率合计超过园区总表",
     "READING_COUNT_DIFFERENCE": "原始读数计数差异", "POWER_DIFFERENCE": "共同峰分账功率差异",
+    "REVISION_BASE_MISSING": "旧账单归档已丢失，不能形成修订",
+    "REVISION_EMPTY": "修订至少包含一条迟到读数或归属更正",
+    "REVISION_BAD_ROW": "补录行字段与原始表不一致",
+    "REVISION_NOT_PUBLISHABLE": "修订未对平，不能发布为唯一新账单",
+    "REVISION_BASE_NOT_SIGNED": "原账单未达可签发状态，不能作为修订底稿",
+    "REVISION_ALREADY_PUBLISHED": "该账单已有发布修订，唯一发布版不能被替换",
+    "REVISION_NOT_FOUND": "找不到该修订记录",
 }
